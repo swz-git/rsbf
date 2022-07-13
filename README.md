@@ -1,6 +1,6 @@
 # Brainfuck "compiler" written in rust
 
-Simple rust program that translates brainfuck into C and then compiles it using the native C compiler.
+Simple rust program that translates brainfuck into C and then compiles it using the native C compiler (currently, it only works with gcc).
 
 ## Runtime dependencies
 
