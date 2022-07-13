@@ -157,7 +157,7 @@ fn cc(input: &str, binary_name: &str) -> String {
         .stdout_str()
 }
 
-/// rsbf: Brainfuck to c transpiler
+/// Brainfuck to c transpiler
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Args {
