@@ -30,7 +30,7 @@ pub enum BracketState {
 #[derive(Debug)]
 pub enum TokenValue {
     None,
-    Int(i8),
+    Int(isize),
     BracketState(BracketState),
 }
 
@@ -52,8 +52,8 @@ impl TokenValue {
 
 #[derive(Debug)]
 pub struct Token {
-    kind: TokenKind,
-    value: TokenValue,
+    pub kind: TokenKind,
+    pub value: TokenValue,
 }
 
 // Translates input string to Vec<Token>
