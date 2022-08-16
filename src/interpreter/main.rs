@@ -2,7 +2,6 @@ use clap::Parser;
 use rsbflib;
 use rsbflib::{BracketState, TokenKind, TokenValue};
 use std::fs;
-use std::time::{SystemTime, UNIX_EPOCH};
 
 /// Brainfuck interpreter
 #[derive(Parser, Debug)]
@@ -15,26 +14,26 @@ struct Args {
 
 fn find_correct_closing_bracket(startpos: usize, tokens: &Vec<rsbflib::Token>) -> Option<usize> {
     let mut pos = startpos + 1;
-    let mut nonClosedOpenings = 0;
+    let mut non_closed_openings = 0;
     while pos < tokens.len() {
-        let isFound = match &tokens[pos].value {
+        let is_found = match &tokens[pos].value {
             TokenValue::BracketState(s) => match s {
                 BracketState::Closed => {
-                    if (nonClosedOpenings != 0) {
-                        nonClosedOpenings -= 1;
+                    if non_closed_openings != 0 {
+                        non_closed_openings -= 1;
                         false
                     } else {
                         true
                     }
                 }
                 BracketState::Open => {
-                    nonClosedOpenings += 1;
+                    non_closed_openings += 1;
                     false
                 }
             },
             _ => false,
         };
-        if isFound {
+        if is_found {
             return Some(pos);
         }
         pos += 1;
@@ -52,7 +51,7 @@ fn interpret(tokens: Vec<rsbflib::Token>) {
     let mut memory = [0isize; MEM_SIZE];
     let mut mempos: usize = 0;
     let mut pos: usize = 0;
-    let mut loopStack: Vec<usize> = vec![];
+    let mut loop_stack: Vec<usize> = vec![];
 
     while tokens.len() > pos {
         let token = &tokens[pos];
@@ -83,16 +82,16 @@ fn interpret(tokens: Vec<rsbflib::Token>) {
                         pos = find_correct_closing_bracket(pos, &tokens)
                             .expect(&*format!("Opened loop never closed: token pos: {}", pos));
                     } else {
-                        loopStack.push(pos);
+                        loop_stack.push(pos);
                     }
                 }
                 BracketState::Closed => {
                     if memory[mempos] as u8 != 0 {
-                        pos = *loopStack
+                        pos = *loop_stack
                             .last()
                             .expect(&*format!("Closed loop never opened: token pos: {}", pos));
                     } else {
-                        loopStack.pop();
+                        loop_stack.pop();
                     }
                 }
             },
