@@ -1,10 +1,5 @@
-use std::fs;
-
-use clap::Parser;
-use subprocess::{Exec, Redirection};
-
 #[derive(PartialEq, Debug)]
-enum TokenKind {
+pub enum TokenKind {
     ValMod,
     PosMod,
     Bracket,
@@ -27,13 +22,13 @@ impl TokenKind {
 }
 
 #[derive(Debug)]
-enum BracketState {
+pub enum BracketState {
     Open,
     Closed,
 }
 
 #[derive(Debug)]
-enum TokenValue {
+pub enum TokenValue {
     None,
     Int(i8),
     BracketState(BracketState),
@@ -56,12 +51,13 @@ impl TokenValue {
 }
 
 #[derive(Debug)]
-struct Token {
+pub struct Token {
     kind: TokenKind,
     value: TokenValue,
 }
 
-fn tokenizer(input: &str) -> Vec<Token> {
+// Translates input string to Vec<Token>
+pub fn tokenize(input: &str) -> Vec<Token> {
     let mut tokens: Vec<Token> = vec![];
 
     for command in input.chars() {
@@ -79,7 +75,8 @@ fn tokenizer(input: &str) -> Vec<Token> {
     tokens
 }
 
-fn optimizer(input: Vec<Token>) -> Vec<Token> {
+// Optimizes input
+pub fn optimize(input: Vec<Token>) -> Vec<Token> {
     let mut pos = 0usize;
     let mut tokens: Vec<Token> = input;
 
@@ -114,7 +111,7 @@ fn optimizer(input: Vec<Token>) -> Vec<Token> {
 }
 
 // Translates Vec<Token> to C
-fn translator(tokens: Vec<Token>) -> String {
+pub fn c_translate(tokens: Vec<Token>) -> String {
     let mut result =
         String::from("#include <stdio.h>\nint main(){char array[30000] = {0}; char *ptr = array;");
 
@@ -144,45 +141,4 @@ fn translator(tokens: Vec<Token>) -> String {
     }
 
     result + "return 0;}"
-}
-
-// Compiles C to machine code
-fn cc(input: &str, binary_name: &str) -> String {
-    Exec::cmd("gcc")
-        .args(&["-O3", "-o", binary_name, "-xc", "-"])
-        .stdin(input)
-        .stdout(Redirection::Pipe)
-        .capture()
-        .unwrap()
-        .stdout_str()
-}
-
-/// Brainfuck to c transpiler
-#[derive(Parser, Debug)]
-#[clap(author, version, about, long_about = None)]
-struct Args {
-    /// Brainfuck file to transpile
-    #[clap(short, long, value_parser)]
-    file: String,
-
-    /// Binary (output) path
-    #[clap(short, long, value_parser)]
-    output: String,
-
-    /// Output C code instead of compiling with gcc
-    #[clap(short, long, value_parser)]
-    code: bool,
-}
-
-fn main() {
-    let args = Args::parse();
-    let contents = fs::read_to_string(args.file).expect("Something went wrong reading the file");
-    let tokens = tokenizer(&contents);
-    let optimized_tokens = optimizer(tokens);
-    let c_code = translator(optimized_tokens);
-    if args.code {
-        print!("{}", c_code);
-    } else {
-        print!("{}", cc(&c_code, &(args.output)));
-    }
 }

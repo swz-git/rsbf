@@ -5,6 +5,18 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[lib]
+name = "rsbflib"
+path = "src/lib/lib.rs"
+
+[[bin]]
+name = "rsbfc"
+path = "src/compiler/main.rs"
+
+[[bin]]
+name = "rsbfi"
+path = "src/interpreter/main.rs"
+
 [dependencies]
 clap = { version = "3.2.11", features = ["derive"] }
 subprocess = "0.2.9"
