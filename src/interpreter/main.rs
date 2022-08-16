@@ -1,5 +1,4 @@
 use clap::Parser;
-use rsbflib;
 use rsbflib::{BracketState, TokenKind, TokenValue};
 use std::fs;
 
@@ -39,9 +38,9 @@ fn find_correct_closing_bracket(startpos: usize, tokens: &Vec<rsbflib::Token>) -
         pos += 1;
     }
     if pos < tokens.len() {
-        return Some(pos);
+        Some(pos)
     } else {
-        return None;
+        None
     }
 }
 
@@ -67,7 +66,7 @@ fn interpret(tokens: Vec<rsbflib::Token>) {
             },
             TokenValue::Int(value) => match &token.kind {
                 TokenKind::ValMod => {
-                    memory[mempos] = memory[mempos] + value;
+                    memory[mempos] += value;
                 }
                 TokenKind::PosMod => {
                     // TODO: A lot of "as" here, maybe its slow?
