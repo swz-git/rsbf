@@ -4,7 +4,7 @@ use subprocess::{Exec, Redirection};
 
 // Compiles C to machine code
 fn cc(input: &str, binary_name: &str) -> String {
-    Exec::cmd("gcc")
+    Exec::cmd("clang")
         .args(&["-O3", "-o", binary_name, "-xc", "-"])
         .stdin(input)
         .stdout(Redirection::Pipe)
