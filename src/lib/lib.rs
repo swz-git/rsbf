@@ -6,6 +6,7 @@ pub enum TokenKind {
     Comment,
     Output,
     Input,
+    Clear,
 }
 impl TokenKind {
     fn from(input: char) -> TokenKind {
@@ -21,13 +22,13 @@ impl TokenKind {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum BracketState {
     Open,
     Closed,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum TokenValue {
     None,
     Int(isize),
@@ -80,6 +81,7 @@ pub fn optimize(input: Vec<Token>) -> Vec<Token> {
     let mut pos = 0usize;
     let mut tokens: Vec<Token> = input;
 
+    // Optimized multiple adds into one. Example: i++;i++;i++; becomes i+=3;
     while pos < tokens.len() - 1 {
         let token = &tokens[pos];
         let next = &tokens[pos + 1];
@@ -107,6 +109,28 @@ pub fn optimize(input: Vec<Token>) -> Vec<Token> {
         }
     }
 
+    // Replace while (*ptr) {*ptr += -1} with *ptr = 0;
+    pos = 0;
+    while pos < tokens.len() - 2 {
+        let tokens_for_check = &tokens[pos..pos + 3];
+        if (tokens_for_check[0].kind == TokenKind::Bracket
+            && tokens_for_check[0].value == TokenValue::BracketState(BracketState::Open))
+            && (tokens_for_check[1].kind == TokenKind::ValMod
+                && tokens_for_check[1].value == TokenValue::Int(-1))
+            && (tokens_for_check[2].kind == TokenKind::Bracket
+                && tokens_for_check[2].value == TokenValue::BracketState(BracketState::Closed))
+        {
+            tokens.splice(
+                pos..pos + 3,
+                [Token {
+                    kind: TokenKind::Clear,
+                    value: TokenValue::None,
+                }],
+            );
+        }
+        pos += 1;
+    }
+
     tokens
 }
 
@@ -121,6 +145,7 @@ pub fn c_translate(tokens: Vec<Token>) -> String {
                 result += match token.kind {
                     TokenKind::Output => "putchar(*ptr);",
                     TokenKind::Input => "*ptr = getchar();",
+                    TokenKind::Clear => "*ptr = 0;",
                     _ => panic!("Kind isn't of value None"),
                 };
             }

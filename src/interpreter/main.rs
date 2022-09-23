@@ -62,6 +62,9 @@ fn interpret(tokens: Vec<rsbflib::Token>) {
                 TokenKind::Input => {
                     todo!("input char (,)")
                 }
+                TokenKind::Clear => {
+                    memory[mempos] = 0;
+                }
                 _ => panic!("Kind isn't of value None"),
             },
             TokenValue::Int(value) => match &token.kind {
