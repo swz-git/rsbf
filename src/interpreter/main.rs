@@ -1,6 +1,6 @@
 use clap::Parser;
 use nohash_hasher::NoHashHasher;
-use rsbflib::{BracketState, TokenKind, TokenValue};
+use rsbflib::{BracketState, TokenKind};
 use std::{
     collections::HashMap,
     error::Error,
@@ -25,15 +25,15 @@ fn generate_jumping_map(
         HashMap::with_capacity_and_hasher(
             tokens
                 .iter()
-                .filter(|x| x.value == TokenValue::BracketState(BracketState::Open))
+                .filter(|x| x.kind == TokenKind::Bracket(BracketState::Open))
                 .count(),
             BuildHasherDefault::default(),
         );
     let mut open_bracket_index_stack: Vec<usize> = vec![];
     for (i, token) in tokens.iter().enumerate() {
-        match token.value {
-            TokenValue::BracketState(BracketState::Open) => open_bracket_index_stack.push(i),
-            TokenValue::BracketState(BracketState::Closed) => {
+        match token.kind {
+            TokenKind::Bracket(BracketState::Open) => open_bracket_index_stack.push(i),
+            TokenKind::Bracket(BracketState::Closed) => {
                 map.insert(
                     open_bracket_index_stack
                         .pop()
@@ -67,51 +67,45 @@ fn interpret(tokens: Vec<rsbflib::Token>) {
 
     while tokens.len() > pos {
         let token = &tokens[pos];
-        match &token.value {
-            TokenValue::None => match token.kind {
-                TokenKind::Output => {
-                    (memory[mempos] as u8 as char).encode_utf8(&mut temp_stdout_buf);
-                    stdout
-                        .write(&temp_stdout_buf)
-                        .expect("Couldn't write to stdout");
-                    stdout.flush().expect("fuck you");
+        match &token.kind {
+            TokenKind::Output => {
+                (memory[mempos] as u8 as char).encode_utf8(&mut temp_stdout_buf);
+                stdout
+                    .write(&temp_stdout_buf)
+                    .expect("Couldn't write to stdout");
+                // updates stdout per char but is much slower in a slow terminal
+                // stdout.flush().expect("Couldn't flush stdout");
+            }
+            TokenKind::Input => {
+                todo!("input char (,)")
+            }
+            TokenKind::Clear => {
+                memory[mempos] = 0;
+            }
+            TokenKind::ValMod(value) => {
+                memory[mempos] += value;
+            }
+            TokenKind::PosMod(value) => {
+                mempos = mempos.wrapping_add(*value as usize);
+                if mempos >= MEM_SIZE {
+                    mempos %= MEM_SIZE
                 }
-                TokenKind::Input => {
-                    todo!("input char (,)")
+            }
+            TokenKind::Bracket(BracketState::Open) => {
+                if memory[mempos] as u8 == 0 {
+                    pos = *jumping_map.get(&pos).expect("Opened loop never closed");
+                } else {
+                    loop_stack.push(pos);
                 }
-                TokenKind::Clear => {
-                    memory[mempos] = 0;
+            }
+            TokenKind::Bracket(BracketState::Closed) => {
+                if memory[mempos] as u8 != 0 {
+                    pos = *loop_stack.last().expect("Closed loop never opened")
+                } else {
+                    loop_stack.pop();
                 }
-                _ => panic!("Kind isn't of value None"),
-            },
-            TokenValue::Int(value) => match &token.kind {
-                TokenKind::ValMod => {
-                    memory[mempos] += value;
-                }
-                TokenKind::PosMod => {
-                    mempos = mempos.wrapping_add(*value as usize);
-                    if mempos >= MEM_SIZE {
-                        mempos %= MEM_SIZE
-                    }
-                }
-                _ => panic!("Kind isn't of value Int"),
-            },
-            TokenValue::BracketState(s) => match s {
-                BracketState::Open => {
-                    if memory[mempos] as u8 == 0 {
-                        pos = *jumping_map.get(&pos).expect("Opened loop never closed");
-                    } else {
-                        loop_stack.push(pos);
-                    }
-                }
-                BracketState::Closed => {
-                    if memory[mempos] as u8 != 0 {
-                        pos = *loop_stack.last().expect("Closed loop never opened")
-                    } else {
-                        loop_stack.pop();
-                    }
-                }
-            },
+            }
+            TokenKind::Comment => {}
         }
         pos += 1;
     }
