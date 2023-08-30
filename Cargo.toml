@@ -21,7 +21,6 @@ name = "rsbfi"
 path = "src/interpreter/main.rs"
 
 [dependencies]
-bimap = "0.6.3"
 clap = { version = "3.2.11", features = ["derive"] }
 nohash-hasher = "0.2.0"
 subprocess = "0.2.9"
