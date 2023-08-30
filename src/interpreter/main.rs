@@ -61,7 +61,8 @@ fn interpret(tokens: Vec<rsbflib::Token>) {
     let mut loop_stack: Vec<usize> = vec![];
 
     let mut stdout = io::stdout();
-    let mut temp_stdout_buf = [0u8; 1];
+
+    let mut temp_stdio_buf = [0u8; 1];
 
     let jumping_map = generate_jumping_map(&tokens).expect("Couldn't generate jumping tables");
 
@@ -69,9 +70,9 @@ fn interpret(tokens: Vec<rsbflib::Token>) {
         let token = &tokens[pos];
         match &token.kind {
             TokenKind::Output => {
-                (memory[mempos] as u8 as char).encode_utf8(&mut temp_stdout_buf);
+                (memory[mempos] as u8 as char).encode_utf8(&mut temp_stdio_buf);
                 stdout
-                    .write(&temp_stdout_buf)
+                    .write(&temp_stdio_buf)
                     .expect("Couldn't write to stdout");
                 // updates stdout per char but is much slower in a slow terminal
                 // stdout.flush().expect("Couldn't flush stdout");
