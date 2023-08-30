@@ -1,15 +1,17 @@
-<!-- Add info about the interpreter as well -->
+# Fast (non-JIT) brainfuck interpreter and "compiler" written in rust
 
-# Brainfuck "compiler" written in rust
+Rsbf includes 2 binaries, rsbfi and rsbfc. Rsbfi is a fast (for being non-JIT) optimizing brainfuck interpreter. Rsbfc is a brainfuck to C transpiler that using clang then compiles the C code to a binary executable.
 
-Simple rust program that translates brainfuck into C and then compiles it using the native C compiler (currently, it only works with gcc).
+## Runtime dependencies (rsbfc)
 
-## Runtime dependencies
-
-- [GCC](https://gcc.gnu.org/)
+- [clang](https://clang.llvm.org/) (make sure it is in [PATH](https://en.wikipedia.org/wiki/PATH_(variable)))
 
 ## Install
 `cargo install --git https://github.com/swz-git/rsbf`
 
 ## Usage
-run `rsbfc --help`
+`rsbfc --help` or `rsbfi --help`
+
+## Future plans
+
+- [ ] Custom [cranelift](https://cranelift.dev/)-powered compiler
