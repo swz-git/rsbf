@@ -22,7 +22,13 @@ fn generate_jumping_map(
     tokens: &Vec<rsbflib::Token>,
 ) -> Result<HashMap<usize, usize, BuildHasherDefault<NoHashHasher<usize>>>, Box<dyn Error>> {
     let mut map: HashMap<usize, usize, BuildHasherDefault<NoHashHasher<usize>>> =
-        HashMap::with_hasher(BuildHasherDefault::default());
+        HashMap::with_capacity_and_hasher(
+            tokens
+                .iter()
+                .filter(|x| x.value == TokenValue::BracketState(BracketState::Open))
+                .count(),
+            BuildHasherDefault::default(),
+        );
     let mut open_bracket_index_stack: Vec<usize> = vec![];
     for (i, token) in tokens.iter().enumerate() {
         match token.value {
@@ -83,8 +89,10 @@ fn interpret(tokens: Vec<rsbflib::Token>) {
                     memory[mempos] += value;
                 }
                 TokenKind::PosMod => {
-                    // TODO: A lot of "as" here, maybe its slow?
-                    mempos = (mempos as isize + value) as usize % MEM_SIZE;
+                    mempos = mempos.wrapping_add(*value as usize);
+                    if mempos >= MEM_SIZE {
+                        mempos %= MEM_SIZE
+                    }
                 }
                 _ => panic!("Kind isn't of value Int"),
             },
