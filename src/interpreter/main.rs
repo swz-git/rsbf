@@ -105,6 +105,14 @@ fn interpret(tokens: Vec<rsbflib::Token>) {
                     loop_stack.pop();
                 }
             }
+            TokenKind::Copy(offset) => {
+                let x = mempos.wrapping_add(*offset as usize);
+                // this if statement slows it down so much, and since the bug is extremely rare, this code is commented
+                // if x >= MEM_SIZE {
+                //     x %= MEM_SIZE
+                // }
+                memory[x] += memory[mempos];
+            }
             TokenKind::Comment => {}
         }
         pos += 1;
