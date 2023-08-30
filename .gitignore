@@ -1,3 +1,4 @@
 /target
 graph*.svg
 perf.data*
+profile.json
