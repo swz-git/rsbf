@@ -44,10 +44,6 @@ fn generate_jumping_map(
     }
 
     Ok(map)
-    // Ok(map
-    //     .iter()
-    //     .map(|x| (*x.0, x.1.expect("Opened bracket never closes")))
-    //     .collect())
 }
 
 const MEM_SIZE: usize = 30000;
@@ -96,9 +92,6 @@ fn interpret(tokens: Vec<rsbflib::Token>) {
                 BracketState::Open => {
                     if memory[mempos] as u8 == 0 {
                         pos = *jumping_map.get(&pos).expect("Opened loop never closed");
-
-                        // pos = find_correct_closing_bracket(pos, &tokens)
-                        //     .expect("Opened loop never closed");
                     } else {
                         loop_stack.push(pos);
                     }
