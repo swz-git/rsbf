@@ -2,7 +2,7 @@ use clap::Parser;
 use nohash_hasher::NoHashHasher;
 use rsbflib::{BracketState, TokenKind, TokenValue};
 use std::{
-    collections::{BTreeMap, HashMap},
+    collections::HashMap,
     error::Error,
     fs,
     hash::BuildHasherDefault,
@@ -16,41 +16,6 @@ struct Args {
     /// Brainfuck file
     #[clap(value_parser)]
     file: String,
-}
-
-// caching was not worth it
-// #[cached(key = "usize", convert = "{ startpos }")]
-fn find_correct_closing_bracket(startpos: usize, tokens: &Vec<rsbflib::Token>) -> Option<usize> {
-    let mut pos = startpos + 1;
-    let mut non_closed_openings = 0;
-    while pos < tokens.len() {
-        let is_found = match &tokens[pos].value {
-            TokenValue::BracketState(s) => match s {
-                BracketState::Closed => {
-                    if non_closed_openings != 0 {
-                        non_closed_openings -= 1;
-                        false
-                    } else {
-                        true
-                    }
-                }
-                BracketState::Open => {
-                    non_closed_openings += 1;
-                    false
-                }
-            },
-            _ => false,
-        };
-        if is_found {
-            return Some(pos);
-        }
-        pos += 1;
-    }
-    if pos < tokens.len() {
-        Some(pos)
-    } else {
-        None
-    }
 }
 
 fn generate_jumping_map(
