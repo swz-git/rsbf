@@ -1,5 +1,6 @@
 use cranelift::{
     codegen::{
+        control::ControlPlane,
         entity::EntityRef,
         ir::{
             condcodes::IntCC, types::I8, AbiParam, Function, InstBuilder,
@@ -154,11 +155,15 @@ pub fn compile(instructions: Vec<Token>) -> Result<Vec<u8>, Box<dyn Error>> {
 
                 let after_block = builder.create_block();
 
-                // builder
-                //     .ins()
-                //     .brif(result, exit_block, &[], after_block, &[]);
-                builder.ins().brnz(result, exit_block, &[result]);
-                builder.ins().jump(after_block, &[]);
+                builder.ins().brif(
+                    result,
+                    exit_block,
+                    &[result],
+                    after_block,
+                    &[],
+                );
+                // builder.ins().brnz(result, exit_block, &[result]);
+                // builder.ins().jump(after_block, &[]);
 
                 builder.seal_block(after_block);
                 builder.switch_to_block(after_block);
@@ -177,11 +182,15 @@ pub fn compile(instructions: Vec<Token>) -> Result<Vec<u8>, Box<dyn Error>> {
 
                 let after_block = builder.create_block();
 
-                // builder
-                //     .ins()
-                //     .brif(result, exit_block, &[], after_block, &[]);
-                builder.ins().brnz(result, exit_block, &[result]);
-                builder.ins().jump(after_block, &[]);
+                builder.ins().brif(
+                    result,
+                    exit_block,
+                    &[result],
+                    after_block,
+                    &[],
+                );
+                // builder.ins().brnz(result, exit_block, &[result]);
+                // builder.ins().jump(after_block, &[]);
 
                 builder.seal_block(after_block);
                 builder.switch_to_block(after_block);
@@ -196,15 +205,15 @@ pub fn compile(instructions: Vec<Token>) -> Result<Vec<u8>, Box<dyn Error>> {
                 let cell_value =
                     builder.ins().load(I8, mem_flags, cell_address, 0);
 
-                // builder.ins().brif(
-                //     cell_value,
-                //     inner_block,
-                //     &[],
-                //     after_block,
-                //     &[],
-                // );
-                builder.ins().brz(cell_value, after_block, &[]);
-                builder.ins().jump(inner_block, &[]);
+                builder.ins().brif(
+                    cell_value,
+                    inner_block,
+                    &[],
+                    after_block,
+                    &[],
+                );
+                // builder.ins().brz(cell_value, after_block, &[]);
+                // builder.ins().jump(inner_block, &[]);
 
                 builder.switch_to_block(inner_block);
 
@@ -222,15 +231,15 @@ pub fn compile(instructions: Vec<Token>) -> Result<Vec<u8>, Box<dyn Error>> {
                 let cell_value =
                     builder.ins().load(I8, mem_flags, cell_address, 0);
 
-                // builder.ins().brif(
-                //     cell_value,
-                //     inner_block,
-                //     &[],
-                //     after_block,
-                //     &[],
-                // );
-                builder.ins().brnz(cell_value, inner_block, &[]);
-                builder.ins().jump(after_block, &[]);
+                builder.ins().brif(
+                    cell_value,
+                    inner_block,
+                    &[],
+                    after_block,
+                    &[],
+                );
+                // builder.ins().brnz(cell_value, inner_block, &[]);
+                // builder.ins().jump(after_block, &[]);
 
                 builder.seal_block(inner_block);
                 builder.seal_block(after_block);
@@ -305,8 +314,7 @@ pub fn compile(instructions: Vec<Token>) -> Result<Vec<u8>, Box<dyn Error>> {
     }
 
     let mut ctx = Context::for_function(func);
-    // let code = match ctx.compile(&*isa, &mut ControlPlane::default()) {
-    let code = match ctx.compile(&*isa) {
+    let code = match ctx.compile(&*isa, &mut ControlPlane::default()) {
         Ok(x) => x,
         Err(err) => {
             eprintln!("error compiling: {:?}", err);

@@ -22,7 +22,7 @@ path = "src/interpreter/main.rs"
 
 [dependencies]
 clap = { version = "3.2.11", features = ["derive"] }
-cranelift = "0.89.2"
+cranelift = "0.100.0"
 memmap2 = "0.9.0"
 nohash-hasher = "0.2.0"
 subprocess = "0.2.9"
