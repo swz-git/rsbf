@@ -81,12 +81,20 @@ pub fn optimize(input: Vec<Token>) -> Vec<Token> {
             let token = &tokens[pos];
             let next = &tokens[pos + 1];
             match (&token.kind, &next.kind) {
-                (TokenKind::PosMod(token_value), TokenKind::PosMod(next_value)) => {
-                    tokens[pos].kind = TokenKind::PosMod(token_value + next_value);
+                (
+                    TokenKind::PosMod(token_value),
+                    TokenKind::PosMod(next_value),
+                ) => {
+                    tokens[pos].kind =
+                        TokenKind::PosMod(token_value + next_value);
                     tokens.remove(pos + 1);
                 }
-                (TokenKind::ValMod(token_value), TokenKind::ValMod(next_value)) => {
-                    tokens[pos].kind = TokenKind::ValMod(token_value + next_value);
+                (
+                    TokenKind::ValMod(token_value),
+                    TokenKind::ValMod(next_value),
+                ) => {
+                    tokens[pos].kind =
+                        TokenKind::ValMod(token_value + next_value);
                     tokens.remove(pos + 1);
                 }
                 _ => {
@@ -101,9 +109,11 @@ pub fn optimize(input: Vec<Token>) -> Vec<Token> {
         pos = 0;
         while pos < tokens.len() - 2 {
             let tokens_for_check = &tokens[pos..pos + 3];
-            if (tokens_for_check[0].kind == TokenKind::Bracket(BracketState::Open))
+            if (tokens_for_check[0].kind
+                == TokenKind::Bracket(BracketState::Open))
                 && (tokens_for_check[1].kind == TokenKind::ValMod(-1))
-                && (tokens_for_check[2].kind == TokenKind::Bracket(BracketState::Closed))
+                && (tokens_for_check[2].kind
+                    == TokenKind::Bracket(BracketState::Closed))
             {
                 let code_pos = &tokens_for_check[0].code_pos;
                 tokens.splice(
@@ -166,7 +176,8 @@ pub fn optimize(input: Vec<Token>) -> Vec<Token> {
                         stage = 2;
                         tokens_optimized += 1;
                         pos += 1;
-                    } else if token.kind == TokenKind::Bracket(BracketState::Closed)
+                    } else if token.kind
+                        == TokenKind::Bracket(BracketState::Closed)
                         && current_pos_offset == 0
                     {
                         tokens.drain((pos - tokens_optimized)..(pos + 1));
@@ -229,8 +240,12 @@ pub fn c_translate(tokens: Vec<Token>) -> String {
             TokenKind::Output => "putchar(*ptr);".into(),
             TokenKind::Input => "*ptr = getchar();".into(),
             TokenKind::Clear => "*ptr = 0;".into(),
-            TokenKind::ValMod(value) => format!("*ptr += {};", value),
-            TokenKind::PosMod(value) => format!("ptr += {};", value),
+            TokenKind::ValMod(value) => {
+                format!("*ptr += {};", value)
+            }
+            TokenKind::PosMod(value) => {
+                format!("ptr += {};", value)
+            }
             TokenKind::Bracket(BracketState::Open) => "while (*ptr) {".into(),
             TokenKind::Bracket(BracketState::Closed) => "}".into(),
             TokenKind::Copy(value) => format!(

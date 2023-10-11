@@ -32,7 +32,8 @@ struct Args {
 
 fn main() {
     let args = Args::parse();
-    let contents = fs::read_to_string(args.file).expect("Something went wrong reading the file");
+    let contents = fs::read_to_string(args.file)
+        .expect("Something went wrong reading the file");
     let tokens = rsbflib::tokenize(&contents);
     let optimized_tokens = rsbflib::optimize(tokens);
     let c_code = rsbflib::c_translate(optimized_tokens);
