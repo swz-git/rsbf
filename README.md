@@ -1,6 +1,6 @@
-# Fast (non-JIT) brainfuck interpreter and "compiler" written in rust
+# Fast (JIT & non-JIT) brainfuck interpreter and "compiler" written in rust
 
-Rsbf includes 2 binaries, rsbfi and rsbfc. Rsbfi is a fast (for being non-JIT) optimizing brainfuck interpreter. Rsbfc is a brainfuck to C transpiler that using clang compiles the C code to a binary executable.
+Rsbf includes 2 binaries, rsbfi and rsbfc. Rsbfi is a fast (both JIT and non-JIT) optimizing brainfuck interpreter. Rsbfc is a brainfuck to C transpiler that compiles the transpiled C code using clang to a binary executable.
 
 ## Runtime dependencies (rsbfc)
 
