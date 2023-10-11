@@ -58,7 +58,7 @@ fn generate_jumping_map(
 const MEM_SIZE: usize = 30000;
 
 fn interpret(tokens: Vec<rsbflib::Token>) {
-    let mut memory = [0u8; MEM_SIZE];
+    let mut memory = [0isize; MEM_SIZE];
     let mut mempos: usize = 0;
     let mut pos: usize = 0;
     let mut loop_stack: Vec<usize> = vec![];
@@ -88,7 +88,7 @@ fn interpret(tokens: Vec<rsbflib::Token>) {
                 memory[mempos] = 0;
             }
             TokenKind::ValMod(value) => {
-                memory[mempos] = memory[mempos].wrapping_add(*value as u8);
+                memory[mempos] += value;
             }
             TokenKind::PosMod(value) => {
                 mempos = mempos.wrapping_add(*value as usize);
@@ -97,7 +97,7 @@ fn interpret(tokens: Vec<rsbflib::Token>) {
                 }
             }
             TokenKind::Bracket(BracketState::Open) => {
-                if memory[mempos] == 0 {
+                if memory[mempos] as u8 == 0 {
                     pos = *jumping_map
                         .get(&pos)
                         .expect("Opened loop never closed");
@@ -106,7 +106,7 @@ fn interpret(tokens: Vec<rsbflib::Token>) {
                 }
             }
             TokenKind::Bracket(BracketState::Closed) => {
-                if memory[mempos] != 0 {
+                if memory[mempos] as u8 != 0 {
                     pos = *loop_stack.last().expect("Closed loop never opened")
                 } else {
                     loop_stack.pop();
