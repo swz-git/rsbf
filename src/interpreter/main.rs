@@ -182,7 +182,7 @@ fn main() {
         }
 
         #[cfg(not(feature = "jit"))]
-        Err("JIT Feature was not enabled at compile time").unwrap()
+        Err("Feature 'jit' was not enabled at compile time").unwrap()
     } else {
         interpret(optimized_tokens);
     }
