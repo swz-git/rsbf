@@ -13,7 +13,7 @@ fn cc(input: &str, binary_name: &str) -> String {
         .stdout_str()
 }
 
-/// Brainfuck to c transpiler
+/// Brainfuck compiler
 #[derive(Parser, Debug)]
 #[clap(name="rsbfc", author, version, about, long_about = None)]
 struct Args {
@@ -25,8 +25,13 @@ struct Args {
     #[clap(value_parser, default_value = "a.out")]
     output: String,
 
-    /// Output C code instead of compiling with gcc
-    #[clap(short, long, value_parser)]
+    /// Output C code instead of compiling
+    #[clap(
+        long,
+        // conflicts_with = "cranelift",
+        conflicts_with = "output",
+        value_parser
+    )]
     code: bool,
 }
 

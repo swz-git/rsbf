@@ -1,3 +1,4 @@
+#[cfg(feature = "codegen")]
 pub mod codegen;
 
 #[derive(PartialEq, Debug, Clone)]

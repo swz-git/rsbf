@@ -2,3 +2,4 @@
 graph*.svg
 perf.data*
 profile.json
+*.out

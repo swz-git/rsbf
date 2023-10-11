@@ -1,6 +1,6 @@
 use clap::Parser;
 use nohash_hasher::NoHashHasher;
-use rsbflib::{codegen, BracketState, TokenKind};
+use rsbflib::{BracketState, TokenKind};
 use std::{
     collections::HashMap,
     error::Error,
@@ -9,6 +9,9 @@ use std::{
     io::{self, Write},
     path::PathBuf,
 };
+
+#[cfg(feature = "jit")]
+use rsbflib::codegen;
 
 fn generate_jumping_map(
     tokens: &Vec<rsbflib::Token>,
@@ -124,6 +127,7 @@ fn interpret(tokens: Vec<rsbflib::Token>) {
     }
 }
 
+#[cfg(feature = "jit")]
 fn run_bytecode(code: Vec<u8>) -> std::io::Result<()> {
     let mut memory = [0u8; MEM_SIZE];
     let mut buffer = memmap2::MmapOptions::new()
@@ -170,9 +174,15 @@ fn main() {
     let optimized_tokens = rsbflib::optimize(tokens);
 
     if args.jit {
-        let bytecode =
-            codegen::compile(optimized_tokens).expect("JIT compilation failed");
-        run_bytecode(bytecode).expect("Couldn't run bytecode");
+        #[cfg(feature = "jit")]
+        {
+            let bytecode = codegen::compile(optimized_tokens)
+                .expect("JIT compilation failed");
+            run_bytecode(bytecode).expect("Couldn't run bytecode");
+        }
+
+        #[cfg(not(feature = "jit"))]
+        Err("JIT Feature was not enabled at compile time").unwrap()
     } else {
         interpret(optimized_tokens);
     }
