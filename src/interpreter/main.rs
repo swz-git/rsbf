@@ -1,6 +1,6 @@
 use clap::Parser;
 use nohash_hasher::NoHashHasher;
-use rsbflib::{BracketState, TokenKind};
+use rsbflib::{codegen, BracketState, TokenKind};
 use std::{
     collections::HashMap,
     error::Error,
@@ -9,15 +9,6 @@ use std::{
     io::{self, Write},
     path::PathBuf,
 };
-
-/// Brainfuck interpreter
-#[derive(Parser, Debug)]
-#[clap(author, version, about, long_about = None)]
-struct Args {
-    /// Brainfuck file
-    #[clap(value_parser)]
-    file: PathBuf,
-}
 
 fn generate_jumping_map(
     tokens: &Vec<rsbflib::Token>,
@@ -133,11 +124,56 @@ fn interpret(tokens: Vec<rsbflib::Token>) {
     }
 }
 
+fn run_bytecode(code: Vec<u8>) -> std::io::Result<()> {
+    let mut memory = [0u8; MEM_SIZE];
+    let mut buffer = memmap2::MmapOptions::new()
+        .len(code.len())
+        .map_anon()
+        .unwrap();
+
+    buffer.copy_from_slice(code.as_slice());
+
+    let buffer = buffer.make_exec().unwrap();
+
+    unsafe {
+        let code_fn: unsafe extern "C" fn(*mut u8) -> *mut std::io::Error =
+            std::mem::transmute(buffer.as_ptr());
+
+        let error = code_fn(memory.as_mut_ptr());
+
+        if !error.is_null() {
+            return Err(*Box::from_raw(error));
+        }
+    }
+
+    Ok(())
+}
+
+/// Brainfuck interpreter
+#[derive(Parser, Debug)]
+#[clap(author, version, about, long_about = None)]
+struct Args {
+    /// Brainfuck file
+    #[clap(value_parser)]
+    file: PathBuf,
+
+    /// JIT code instead of interpreting
+    #[clap(short, long, value_parser)]
+    jit: bool,
+}
+
 fn main() {
     let args = Args::parse();
     let contents = fs::read_to_string(args.file)
         .expect("Something went wrong reading the file");
     let tokens = rsbflib::tokenize(&contents);
     let optimized_tokens = rsbflib::optimize(tokens);
-    interpret(optimized_tokens);
+
+    if args.jit {
+        let bytecode =
+            codegen::compile(optimized_tokens).expect("JIT compilation failed");
+        run_bytecode(bytecode).expect("Couldn't run bytecode");
+    } else {
+        interpret(optimized_tokens);
+    }
 }

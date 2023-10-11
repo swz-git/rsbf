@@ -1,3 +1,5 @@
+pub mod codegen;
+
 #[derive(PartialEq, Debug, Clone)]
 pub enum BracketState {
     Open,
